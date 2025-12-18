@@ -17,15 +17,6 @@ GeoPin is a web-based location management application that allows users to [desc
 * **Frontend:** HTML5, CSS3, JavaScript
 * **Tools:** VS Code, Git
 
-## 📂 Project Structure
-geopin-backend/
-├── middleware/      # Authentication & logic middleware
-├── prisma/          # Database schema and migrations
-├── public/          # Frontend assets (HTML, CSS, JS)
-├── .env             # Environment variables
-├── index.js         # Entry point for the server
-└── package.json     # Dependencies
-
 ⚙️ Installation & Setup
 Follow these steps to run the project locally:
 
