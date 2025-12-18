@@ -14,9 +14,7 @@ node_modules
 
 # Prisma - Generated files and local databases
 /generated/prisma
-*.db
-*.sqlite
-*.sqlite-journal
+
 
 # Logs - In case your app crashes and creates log files
 logs
