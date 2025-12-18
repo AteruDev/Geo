@@ -1,0 +1,30 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+node_modules
+# Keep environment variables out of version control
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Prisma - Generated files and local databases
+/generated/prisma
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Logs - In case your app crashes and creates log files
+logs
+*.log
+npm-debug.log*
+
+# Mac System Files - These are annoying junk files Macs create automatically
+.DS_Store
+
+# Editor Settings - Optional, but keeps personal settings out of the team code
+.vscode/

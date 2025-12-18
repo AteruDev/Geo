@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPin Login</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; }
+        .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        h1 { margin-bottom: 1.5rem; color: #333; }
+        button { background-color: #4285F4; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #357ae8; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>GeoPin System</h1>
+        <p>Manage your location pins securely.</p>
+        <br>
+        <button id="google-login">Sign in with Google</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // 2. PASTE YOUR KEYS HERE (From your .env file)
+        const SUPABASE_URL = 'https://dzaymfyxwslcsnzohhpb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6YXltZnl4d3NsY3Nuem9oaHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDU5MjcsImV4cCI6MjA4MTUyMTkyN30.v9iBmdvGN5Kwjq2IRNXYfTfK8Vjsylu28KBRGqUghEU';
+
+        // Initialize Supabase (Use a different name like supabaseClient)
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 3. Handle Login
+        document.getElementById('google-login').addEventListener('click', async () => {
+            // Use the new name here too
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/dashboard.html' 
+                }
+            });
+
+            if (error) alert('Error logging in: ' + error.message);
+        });
+    </script>
+</body>
+</html>

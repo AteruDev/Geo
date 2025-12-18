@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GeoPin Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #333; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        #map { flex-grow: 1; width: 100%; } /* Map takes up remaining space */
+        .logout-btn { background: #ff4444; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <strong>GeoPin System</strong> | <span id="user-email">Loading...</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </header>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // --- CONFIGURATION ---
+        // PASTE YOUR REAL KEYS HERE
+        const SUPABASE_URL = 'https://dzaymfyxwslcsnzohhpb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6YXltZnl4d3NsY3Nuem9oaHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDU5MjcsImV4cCI6MjA4MTUyMTkyN30.v9iBmdvGN5Kwjq2IRNXYfTfK8Vjsylu28KBRGqUghEU'; // <--- PASTE YOUR KEY HERE
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let userSession = null;
+        let map = null;
+
+        // --- 1. INITIALIZE MAP ---
+        function initMap() {
+            // Start centered on the Philippines (Lat: 12.8, Long: 121.7)
+            map = L.map('map').setView([12.8797, 121.7740], 6);
+
+            // Add the "tile layer" (the actual map images)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add Click Event: When user clicks map, add a pin
+            map.on('click', onMapClick);
+        }
+
+        // --- 2. AUTHENTICATION & LOAD DATA ---
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '/index.html';
+                return;
+            }
+            userSession = session;
+            document.getElementById('user-email').textContent = session.user.email;
+            
+            initMap();      // Draw the map
+            loadPins();     // Fetch existing pins from backend
+        }
+
+        // --- 3. CREATE PIN (POST) ---
+        async function onMapClick(e) {
+            const name = prompt("Enter a name for this location:");
+            if (!name) return; // Cancelled
+
+            const { lat, lng } = e.latlng;
+
+            // Send to Backend
+            try {
+                const response = await fetch('/api/pins', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userSession.access_token}` // Send Supabase Token
+                    },
+                    body: JSON.stringify({ name, latitude: lat, longitude: lng })
+                });
+
+                if (response.ok) {
+                    const newPin = await response.json();
+                    addMarkerToMap(newPin); // Show on map visually
+                } else {
+                    alert('Failed to save pin');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error connecting to server');
+            }
+        }
+
+        // --- 4. FETCH PINS (GET) ---
+        async function loadPins() {
+            try {
+                const response = await fetch('/api/pins', {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.access_token}`
+                    }
+                });
+                const pins = await response.json();
+                
+                // Loop through every pin and add it to the map
+                pins.forEach(pin => addMarkerToMap(pin));
+            } catch (err) {
+                console.error('Error loading pins:', err);
+            }
+        }
+
+        // Helper: Visually add a pin
+        function addMarkerToMap(pin) {
+            L.marker([pin.latitude, pin.longitude])
+                .addTo(map)
+                .bindPopup(`<b>${pin.name}</b><br>Lat: ${pin.latitude.toFixed(4)}<br>Long: ${pin.longitude.toFixed(4)}`);
+        }
+
+        // Logout logic
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = '/index.html';
+        }
+
+        // Start
+        checkSession();
+    </script>
+</body>
+</html>

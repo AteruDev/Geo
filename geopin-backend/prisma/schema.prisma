@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+  // Make sure there is NO "previewFeatures" line here
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int           @id @default(autoincrement())
+  email     String        @unique
+  createdAt DateTime      @default(now())
+  pins      LocationPin[]
+}
+
+
+model LocationPin {
+  id        Int      @id @default(autoincrement())
+  name      String
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
