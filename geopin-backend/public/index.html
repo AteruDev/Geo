@@ -23,26 +23,38 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
-        // 2. PASTE YOUR KEYS HERE (From your .env file)
-        const SUPABASE_URL = 'https://dzaymfyxwslcsnzohhpb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6YXltZnl4d3NsY3Nuem9oaHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDU5MjcsImV4cCI6MjA4MTUyMTkyN30.v9iBmdvGN5Kwjq2IRNXYfTfK8Vjsylu28KBRGqUghEU';
+<script>
+        // We wrap everything in an 'async' function so we can wait for the keys
+        async function initializeApp() {
+            try {
+                // 1. Ask the backend for the keys
+                const response = await fetch('/api/config');
+                const config = await response.json();
 
-        // Initialize Supabase (Use a different name like supabaseClient)
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                // 2. Initialize Supabase with the keys we just got
+                const supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
 
-        // 3. Handle Login
-        document.getElementById('google-login').addEventListener('click', async () => {
-            // Use the new name here too
-            const { data, error } = await supabaseClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/dashboard.html' 
-                }
-            });
+                // 3. Setup the Login Button
+                document.getElementById('google-login').addEventListener('click', async () => {
+                    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                            // Automatically determine the current URL (localhost:3000)
+                            redirectTo: window.location.origin + '/dashboard.html' 
+                        }
+                    });
 
-            if (error) alert('Error logging in: ' + error.message);
-        });
+                    if (error) alert('Error logging in: ' + error.message);
+                });
+
+            } catch (error) {
+                console.error("Could not load config:", error);
+                alert("Error connecting to server.");
+            }
+        }
+
+        // Start the app
+        initializeApp();
     </script>
 </body>
 </html>
